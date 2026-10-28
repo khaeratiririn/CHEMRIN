@@ -176,7 +176,7 @@
                         <h2 class="text-2xl md:text-4xl font-extrabold text-slate-900" id="profileTeacherName">Ibu Khaerati Ririn, S.Pd.</h2>
                         <p class="text-amber-700 font-semibold text-sm md:text-base">Guru Mata Pelajaran Kimia &bull; MA Arifah Gowa</p>
                         <p class="text-slate-600 text-sm leading-relaxed" id="profileTeacherDesc">
-                            Berdedikasi dalam mendidik peserta didik kelas X MA Arifah Gowa dengan pendekatan Kurikulum Merdeka yang interaktif, menyenangkan, dan berbasis eksperimen kimia sederhana.
+                            Berdedikasi dalam mendidik peserta didik kelas X MA Arifah Gowa dengan pendekatan Kurikulum Merdeka yang interaktif dan menyenangkan.
                         </p>
                     </div>
                 </div>
@@ -429,7 +429,7 @@
                 </div>
             </div>
 
-            <!-- ADMIN SUB-TAB 4: KELOLA PERTEMUAN & MATERI -->
+            <!-- ADMIN SUB-TAB 4: KELOLA MATERI & PERTEMUAN -->
             <div id="admin-sub-pertemuan" class="admin-sub-content hidden space-y-6">
                 <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-amber-100 space-y-6">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-4">
@@ -767,6 +767,7 @@
             document.getElementById('admin-sub-' + sub).classList.remove('hidden');
             if (sub === 'kelas') renderAdminClassesGrid();
             if (sub === 'input-nilai') renderAdminScoreInputTable();
+            if (sub === 'pertemuan') renderAdminMeetingsList();
         };
 
         window.renderAdminClassesGrid = function() {
@@ -774,6 +775,7 @@
             const selectCls = document.getElementById('adminManageClassSelect');
             const scoreCls = document.getElementById('scoreInputClassSelect');
             const newStCls = document.getElementById('newStudentClassSelect');
+            if(!grid || !selectCls) return;
             grid.innerHTML = ''; selectCls.innerHTML = ''; scoreCls.innerHTML = ''; newStCls.innerHTML = '';
 
             window.classesData.forEach(c => {
@@ -797,6 +799,7 @@
         window.renderAdminStudentsTable = function() {
             const cls = document.getElementById('adminManageClassSelect').value;
             const tbody = document.getElementById('adminStudentsTableBody');
+            if(!tbody) return;
             const students = window.studentsData[cls] || [];
             tbody.innerHTML = students.length === 0 ? `<tr><td colspan="4" class="p-4 text-center text-slate-400">Belum ada siswa.</td></tr>` : '';
             students.forEach((s, idx) => {
@@ -846,6 +849,7 @@
             const cls = document.getElementById('scoreInputClassSelect').value;
             const comp = document.getElementById('scoreInputComponentSelect').value;
             const tbody = document.getElementById('adminScoreInputTableBody');
+            if(!tbody) return;
             const students = window.studentsData[cls] || [];
             tbody.innerHTML = students.length === 0 ? `<tr><td colspan="5" class="p-4 text-center">Tidak ada siswa.</td></tr>` : '';
             students.forEach((s, idx) => {
@@ -880,6 +884,7 @@
         window.renderAdminMeetingsList = function() {
             const sem = document.getElementById('adminEditSemesterSelect').value;
             const container = document.getElementById('adminMeetingsListContainer');
+            if(!container) return;
             container.innerHTML = '';
             window.meetingsData[sem].forEach((m, idx) => {
                 container.innerHTML += `
@@ -941,6 +946,7 @@
             const cls = document.getElementById('publicClassSelect').value;
             const keyword = document.getElementById('publicSearchInput').value.toLowerCase();
             const tbody = document.getElementById('publicScoresTableBody');
+            if(!tbody) return;
             const students = (window.studentsData[cls] || []).filter(s => s.name.toLowerCase().includes(keyword));
             tbody.innerHTML = students.length === 0 ? `<tr><td colspan="22" class="p-6 text-center text-slate-400">Tidak ada siswa.</td></tr>` : '';
             
