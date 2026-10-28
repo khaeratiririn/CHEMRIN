@@ -1,0 +1,1764 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemistry Learning With Ibu Ririn</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons for Chemistry and UI -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS for Excel Import/Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        chemYellowLight: '#FEF08A', // Yellow 200
+                        chemYellow: '#FACC15',      // Yellow 400
+                        chemYellowDark: '#EAB308',  // Yellow 500
+                        chemYellowDeep: '#CA8A04',  // Yellow 600
+                        chemCream: '#FEFCE8',       // Yellow 50
+                        chemGold: '#D97706',        // Amber 600
+                        chemGreen: '#10B981',
+                        chemRed: '#EF4444'
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 25px -5px rgba(234, 179, 8, 0.2), 0 8px 10px -6px rgba(234, 179, 8, 0.1)',
+                        'card': '0 4px 20px -2px rgba(0, 0, 0, 0.04)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #FEFCE8;
+        }
+        .float-animation {
+            animation: floating 4s ease-in-out infinite;
+        }
+        .float-delay-1 {
+            animation: floating 5s ease-in-out 1s infinite;
+        }
+        .float-delay-2 {
+            animation: floating 4.5s ease-in-out 2s infinite;
+        }
+        @keyframes floating {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #FEF08A;
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #EAB308;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col antialiased selection:bg-yellow-300 selection:text-yellow-950">
+
+    <!-- FLOATING BACKGROUND DECORATIVE ICONS -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0 opacity-20">
+        <i class="fa-solid fa-atom text-6xl text-yellow-600 absolute top-12 left-10 float-animation"></i>
+        <i class="fa-solid fa-flask text-5xl text-yellow-500 absolute top-1/4 right-12 float-delay-1"></i>
+        <i class="fa-solid fa-vial text-6xl text-amber-600 absolute bottom-20 left-16 float-delay-2"></i>
+        <i class="fa-solid fa-dna text-7xl text-yellow-600 absolute bottom-10 right-20 float-animation"></i>
+    </div>
+
+    <!-- MAIN NAVBAR -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-yellow-200/80 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- LOGO & BRAND -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="navigateTo('home')">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-yellow-400 via-amber-400 to-yellow-500 flex items-center justify-center text-slate-900 text-2xl shadow-md shadow-yellow-400/40 transform transition hover:scale-105">
+                        <i class="fa-solid fa-flask"></i>
+                    </div>
+                    <div>
+                        <span class="text-lg sm:text-xl font-black bg-gradient-to-r from-yellow-700 via-amber-700 to-yellow-900 bg-clip-text text-transparent block leading-tight">Chemistry Learning</span>
+                        <span class="text-xs font-extrabold text-amber-800 tracking-wider">WITH IBU RIRIN</span>
+                    </div>
+                </div>
+
+                <!-- DESKTOP NAVIGATION -->
+                <nav class="hidden md:flex items-center gap-1 bg-yellow-100/70 p-1.5 rounded-2xl border border-yellow-300/60">
+                    <button onclick="navigateTo('home')" id="nav-home" class="nav-link px-4 py-2 rounded-xl text-xs font-extrabold transition-all">Beranda</button>
+                    <button onclick="navigateTo('profile')" id="nav-profile" class="nav-link px-4 py-2 rounded-xl text-xs font-extrabold transition-all">Profil Guru</button>
+                    <button onclick="navigateTo('semester', {sem: 1})" id="nav-sem1" class="nav-link px-4 py-2 rounded-xl text-xs font-extrabold transition-all">Sem. Ganjil</button>
+                    <button onclick="navigateTo('semester', {sem: 2})" id="nav-sem2" class="nav-link px-4 py-2 rounded-xl text-xs font-extrabold transition-all">Sem. Genap</button>
+                    <button onclick="navigateTo('grades')" id="nav-grades" class="nav-link px-4 py-2 rounded-xl text-xs font-extrabold transition-all">Daftar Nilai</button>
+                </nav>
+
+                <!-- RIGHT ACTION BUTTON (LOGIN / DASHBOARD) -->
+                <div class="hidden md:flex items-center gap-3">
+                    <button id="auth-btn" onclick="handleAuthAction()" class="px-5 py-2.5 rounded-xl font-extrabold text-xs bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-slate-950 shadow-md shadow-yellow-400/30 transition-all flex items-center gap-2 transform active:scale-95">
+                        <i class="fa-solid fa-lock" id="auth-icon"></i>
+                        <span id="auth-label">Login Guru</span>
+                    </button>
+                </div>
+
+                <!-- MOBILE MENU BUTTON -->
+                <div class="flex md:hidden">
+                    <button onclick="toggleMobileMenu()" class="p-2.5 rounded-xl bg-yellow-200/80 text-yellow-950 hover:bg-yellow-300 transition-colors">
+                        <i class="fa-solid fa-bars text-xl" id="mobile-menu-icon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MOBILE DROPDOWN MENU -->
+        <div id="mobile-menu" class="hidden md:hidden border-b border-yellow-200 bg-white px-4 pt-2 pb-6 space-y-2 shadow-xl">
+            <button onclick="navigateTo('home')" class="w-full text-left px-4 py-3 rounded-xl font-bold hover:bg-yellow-50 text-slate-800 flex items-center gap-3"><i class="fa-solid fa-house text-yellow-600"></i> Beranda</button>
+            <button onclick="navigateTo('profile')" class="w-full text-left px-4 py-3 rounded-xl font-bold hover:bg-yellow-50 text-slate-800 flex items-center gap-3"><i class="fa-solid fa-user-tie text-yellow-600"></i> Profil Guru</button>
+            <button onclick="navigateTo('semester', {sem: 1})" class="w-full text-left px-4 py-3 rounded-xl font-bold hover:bg-yellow-50 text-slate-800 flex items-center gap-3"><i class="fa-solid fa-book-open text-yellow-600"></i> Semester Ganjil</button>
+            <button onclick="navigateTo('semester', {sem: 2})" class="w-full text-left px-4 py-3 rounded-xl font-bold hover:bg-yellow-50 text-slate-800 flex items-center gap-3"><i class="fa-solid fa-bookmark text-yellow-600"></i> Semester Genap</button>
+            <button onclick="navigateTo('grades')" class="w-full text-left px-4 py-3 rounded-xl font-bold hover:bg-yellow-50 text-slate-800 flex items-center gap-3"><i class="fa-solid fa-chart-line text-yellow-600"></i> Status Nilai Siswa</button>
+            <div class="pt-2">
+                <button id="mobile-auth-btn" onclick="handleAuthAction()" class="w-full py-3 rounded-xl font-extrabold bg-yellow-400 text-slate-950 flex items-center justify-center gap-2 shadow-md">
+                    <i class="fa-solid fa-lock" id="mobile-auth-icon"></i>
+                    <span id="mobile-auth-label">Login Guru</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN DYNAMIC CONTENT CONTAINER -->
+    <main id="app-content" class="flex-grow z-10 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Dynamic Content Renders Here -->
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-gradient-to-b from-yellow-50 to-yellow-100 border-t border-yellow-300/80 mt-12 py-8 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
+            <div class="flex items-center justify-center gap-2">
+                <span class="w-8 h-8 rounded-full bg-yellow-400 inline-flex items-center justify-center text-slate-900 font-bold"><i class="fa-solid fa-atom"></i></span>
+                <span class="font-black text-yellow-950 text-lg">Chemistry Learning With Ibu Ririn</span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-600 max-w-lg mx-auto">
+                Platform pembelajaran Kimia interaktif, modern, dan ceria untuk mendukung semangat belajar siswa SMA.
+            </p>
+            <div class="pt-4 border-t border-yellow-300/60 text-xs text-slate-600 flex flex-col sm:flex-row justify-between items-center gap-2">
+                <p>&copy; 2026 Chemistry Learning With Ibu Ririn. All rights reserved.</p>
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                    <span id="sync-status-indicator" class="font-bold">Sistem Aktif</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- NOTIFICATION TOAST -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- MODAL CONTAINER (DYNAMIC) -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div id="modal-box" class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-yellow-300 transform transition-all scale-95 opacity-0 overflow-y-auto max-h-[90vh]">
+            <!-- Dynamic Modal Content -->
+        </div>
+    </div>
+
+    <!-- APP SCRIPT INCLUDING FIREBASE MODULES -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, doc, setDoc, onSnapshot, collection 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global State
+        window.AppState = {
+            currentUser: null,
+            isTeacher: false,
+            teacherPassword: localStorage.getItem('chem_teacher_password') || "admin123", // Secure storage
+            currentView: 'home',
+            viewParams: {},
+            db: null,
+            auth: null,
+            appId: typeof __app_id !== 'undefined' ? __app_id : 'chem-learning-ibu-ririn-app',
+            
+            // Dynamic Data (Synced)
+            profile: {
+                name: "Ibu Ririn, S.Pd., M.Si.",
+                school: "SMA Negeri Pembelajaran",
+                subject: "Kimia SMA",
+                photoUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=600",
+                bio: "Guru Kimia yang berdedikasi menciptakan pembelajaran Kimia yang ceria, mudah dipahami, konseptual, dan interaktif bagi peserta didik SMA.",
+                email: "ririn.chemistry@sekolah.sch.id",
+                officeHours: "Senin - Jumat (07.30 - 15.30 WIB)"
+            },
+            announcements: [
+                { id: '1', date: "28 Oktober 2026", title: "Asesmen Sumatif Bab Struktur Atom", content: "Persiapkan diri Anda untuk mengerjakan Asesmen Sumatif Struktur Atom di Pertemuan 4.", badge: "Penting" },
+                { id: '2', date: "25 Oktober 2026", title: "Tugas Video Praktikum Reaksi Redoks", content: "Kumpulkan video singkat percobaan reaksi redoks sederhana sebelum hari Jumat.", badge: "Tugas" }
+            ],
+            meetings: {}, 
+            classes: [
+                { id: 'X.1', name: "X.1", capacity: 22, level: "X" },
+                { id: 'X.2', name: "X.2", capacity: 21, level: "X" },
+                { id: 'X.3', name: "X.3", capacity: 21, level: "X" },
+                { id: 'X.4', name: "X.4", capacity: 30, level: "X" },
+                { id: 'X.5', name: "X.5", capacity: 31, level: "X" },
+                { id: 'X.6', name: "X.6", capacity: 20, level: "X" }
+            ],
+            students: [],
+            grades: {}
+        };
+
+        // Initialize 32 Default Meetings (16 Ganjil + 16 Genap)
+        function initDefaultMeetings() {
+            const result = {};
+            const ganjilTitles = [
+                "Pengenalan Ilmu Kimia & Keselamatan Kerja Lab",
+                "Struktur Atom & Model Atom Modern",
+                "Konfigurasi Elektron & Bilangan Kuantum",
+                "Sistem Periodik Unsur & Sifat Keperiodikan",
+                "Ikatan Ion & Ikatan Kovalen",
+                "Bentuk Molekul & Teori VSEPR",
+                "Gaya Antarmolekul & Sifat Fisik Zat",
+                "Tata Nama Senyawa Anorganik",
+                "Persamaan Reaksi Kimia",
+                "Hukum Dasar Kimia (Lavoisier & Proust)",
+                "Hukum Gay-Lussac & Avogadro",
+                "Konsep Mol & Massa Molar",
+                "Stoikiometri Reaksi Kimia",
+                "Pereaksi Pembatas dalam Reaksi",
+                "Rumus Empiris & Rumus Molekul",
+                "Kadar Zat dalam Campuran & Evaluasi Semester"
+            ];
+
+            const genapTitles = [
+                "Larutan Elektrolit & Non-Elektrolit",
+                "Konsep Reaksi Oksidasi & Reduksi (Redoks)",
+                "Tata Nama Senyawa Redoks & Biloks",
+                "Tatanama & Penggolongan Senyawa Hidrokarbon",
+                "Isomer Senyawa Hidrokarbon",
+                "Sifat Fisik & Kimia Alkana, Alkena, Alkuna",
+                "Minyak Bumi & Fraksi Minyak Bumi",
+                "Mutu Bensin & Pembakaran Hidrokarbon",
+                "Termokimia & Perubahan Entalpi Reaksi",
+                "Penentuan Entalpi: Kalorimetri & Hukum Hess",
+                "Laju Reaksi & Teori Tumbukan",
+                "Faktor-Faktor yang Memengaruhi Laju Reaksi",
+                "Kesetimbangan Kimia & Pergeseran Kesetimbangan",
+                "Tetapan Kesetimbangan (Kc dan Kp)",
+                "Aplikasi Kesetimbangan dalam Industri",
+                "Review Akhir Tahun & Evaluasi Semester Genap"
+            ];
+
+            for (let i = 1; i <= 16; i++) {
+                result[`sem1_m${i}`] = {
+                    id: `sem1_m${i}`,
+                    semester: 1,
+                    number: i,
+                    title: `Pertemuan ${i}: ${ganjilTitles[i-1]}`,
+                    objective: `Peserta didik mampu memahami konsep ${ganjilTitles[i-1]} serta mengaplikasikannya dalam penyelesaian masalah Kimia dasar secara kontekstual.`,
+                    pptUrl: "https://docs.google.com/presentation/d/e/2PACX-1vQn3-example/embed",
+                    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+                    formsUrl: "",
+                    active: true
+                };
+
+                result[`sem2_m${i}`] = {
+                    id: `sem2_m${i}`,
+                    semester: 2,
+                    number: i,
+                    title: `Pertemuan ${i}: ${genapTitles[i-1]}`,
+                    objective: `Peserta didik dapat menganalisis ${genapTitles[i-1]} dengan sikap kritis dan komunikatif bersama Ibu Ririn.`,
+                    pptUrl: "",
+                    videoUrl: "",
+                    formsUrl: "",
+                    active: true
+                };
+            }
+            return result;
+        }
+
+        window.AppState.meetings = initDefaultMeetings();
+
+        // 20 Grade Components Definition
+        window.GradeComponents = [
+            ...Array.from({length: 16}, (_, i) => ({ id: `asm_${i+1}`, label: `Asesmen ${i+1}`, type: 'asm' })),
+            { id: 'uh_1', label: 'Ujian Harian 1', type: 'uh' },
+            { id: 'uh_2', label: 'Ujian Harian 2', type: 'uh' },
+            { id: 'uts', label: 'UTS', type: 'exam' },
+            { id: 'uas', label: 'UAS', type: 'exam' }
+        ];
+
+        // Setup Firebase Engine
+        async function setupFirebase() {
+            try {
+                const firebaseConfig = typeof __firebase_config !== 'undefined' 
+                    ? JSON.parse(__firebase_config) 
+                    : { apiKey: "demo-key", authDomain: "demo.firebaseapp.com", projectId: "demo-project" };
+
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                const db = getFirestore(app);
+
+                window.AppState.auth = auth;
+                window.AppState.db = db;
+
+                onAuthStateChanged(auth, async (user) => {
+                    window.AppState.currentUser = user;
+                    updateAuthUI();
+                });
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token).catch(() => signInAnonymously(auth));
+                } else {
+                    await signInAnonymously(auth).catch(() => console.log("Running in local mode."));
+                }
+
+                attachDataListeners();
+            } catch (err) {
+                console.warn("Running in local mode.", err);
+                document.getElementById('sync-status-indicator').innerText = "Mode Lokal Aktif";
+            }
+        }
+
+        function getCollectionPath(collName) {
+            return collection(window.AppState.db, 'artifacts', window.AppState.appId, 'public', 'data', collName);
+        }
+
+        function attachDataListeners() {
+            if (!window.AppState.db) return;
+
+            onSnapshot(getCollectionPath('app_settings'), (snapshot) => {
+                snapshot.forEach(docSnap => {
+                    if (docSnap.id === 'profile') window.AppState.profile = { ...window.AppState.profile, ...docSnap.data() };
+                    if (docSnap.id === 'announcements') window.AppState.announcements = docSnap.data().list || [];
+                    if (docSnap.id === 'security') {
+                        if (docSnap.data().password) {
+                            window.AppState.teacherPassword = docSnap.data().password;
+                            localStorage.setItem('chem_teacher_password', docSnap.data().password);
+                        }
+                    }
+                });
+                renderCurrentView();
+            });
+
+            onSnapshot(getCollectionPath('app_meetings'), (snapshot) => {
+                snapshot.forEach(docSnap => {
+                    if (docSnap.id === 'all') window.AppState.meetings = docSnap.data().data || window.AppState.meetings;
+                });
+                renderCurrentView();
+            });
+
+            onSnapshot(getCollectionPath('app_classes'), (snapshot) => {
+                let loadedClasses = [];
+                snapshot.forEach(docSnap => {
+                    if (docSnap.id === 'list') loadedClasses = docSnap.data().classes;
+                });
+                if (loadedClasses.length > 0) window.AppState.classes = loadedClasses;
+                renderCurrentView();
+            });
+
+            onSnapshot(getCollectionPath('app_students'), (snapshot) => {
+                snapshot.forEach(docSnap => {
+                    if (docSnap.id === 'roster') window.AppState.students = docSnap.data().list || [];
+                    if (docSnap.id === 'grades') window.AppState.grades = docSnap.data().records || {};
+                });
+                renderCurrentView();
+            });
+        }
+
+        window.saveDataToStore = async function(collectionKey, docId, dataObject) {
+            if (!window.AppState.db || !window.AppState.currentUser) {
+                showToast("Perubahan tersimpan secara lokal!", "success");
+                renderCurrentView();
+                return;
+            }
+            try {
+                const docRef = doc(window.AppState.db, 'artifacts', window.AppState.appId, 'public', 'data', collectionKey, docId);
+                await setDoc(docRef, dataObject, { merge: true });
+                showToast("Data tersimpan!", "success");
+            } catch (e) {
+                showToast("Tersimpan di perangkat ini.", "warning");
+                renderCurrentView();
+            }
+        };
+
+        window.navigateTo = function(view, params = {}) {
+            window.AppState.currentView = view;
+            window.AppState.viewParams = params;
+            
+            document.querySelectorAll('.nav-link').forEach(btn => {
+                btn.classList.remove('bg-yellow-400', 'text-slate-950', 'shadow-sm');
+                btn.classList.add('text-slate-800', 'hover:bg-yellow-200/60');
+            });
+
+            if (view === 'home') document.getElementById('nav-home')?.classList.add('bg-yellow-400', 'text-slate-950');
+            if (view === 'profile') document.getElementById('nav-profile')?.classList.add('bg-yellow-400', 'text-slate-950');
+            if (view === 'semester' && params.sem === 1) document.getElementById('nav-sem1')?.classList.add('bg-yellow-400', 'text-slate-950');
+            if (view === 'semester' && params.sem === 2) document.getElementById('nav-sem2')?.classList.add('bg-yellow-400', 'text-slate-950');
+            if (view === 'grades') document.getElementById('nav-grades')?.classList.add('bg-yellow-400', 'text-slate-950');
+
+            document.getElementById('mobile-menu').classList.add('hidden');
+            renderCurrentView();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.handleAuthAction = function() {
+            if (window.AppState.isTeacher) {
+                window.AppState.isTeacher = false;
+                showToast("Keluar dari mode Guru", "info");
+                updateAuthUI();
+                navigateTo('home');
+            } else {
+                showLoginModal();
+            }
+        };
+
+        function updateAuthUI() {
+            const label = window.AppState.isTeacher ? "Dashboard Guru" : "Login Guru";
+            const icon = window.AppState.isTeacher ? "fa-solid fa-chalkboard-user" : "fa-solid fa-lock";
+            
+            document.getElementById('auth-label').innerText = label;
+            document.getElementById('auth-icon').className = icon;
+            document.getElementById('mobile-auth-label').innerText = label;
+            document.getElementById('mobile-auth-icon').className = icon;
+
+            const btn = document.getElementById('auth-btn');
+            if (window.AppState.isTeacher) {
+                btn.className = "px-5 py-2.5 rounded-xl font-extrabold text-xs bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 shadow-md transition-all flex items-center gap-2 transform active:scale-95";
+            } else {
+                btn.className = "px-5 py-2.5 rounded-xl font-extrabold text-xs bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-slate-950 shadow-md shadow-yellow-400/30 transition-all flex items-center gap-2 transform active:scale-95";
+            }
+        }
+
+        // NO SPOILED/PLAIN PASSWORD IN MODAL (SECURE)
+        function showLoginModal() {
+            showModal(`
+                <div class="text-center space-y-4">
+                    <div class="w-16 h-16 rounded-3xl bg-yellow-100 text-yellow-700 flex items-center justify-center text-3xl mx-auto shadow-inner">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-black text-slate-800">Autentikasi Guru</h3>
+                        <p class="text-xs text-slate-500 mt-1">Masukkan kata sandi khusus guru untuk membuka Dashboard Administrasi.</p>
+                    </div>
+                    <form onsubmit="verifyTeacherLogin(event)" class="space-y-4 pt-2 text-left">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Kata Sandi Guru</label>
+                            <input type="password" id="teacher-password" class="w-full px-4 py-3 rounded-xl border border-yellow-300 focus:ring-2 focus:ring-yellow-400 outline-none transition font-bold" placeholder="Masukkan password..." required />
+                        </div>
+                        <div class="flex gap-3 pt-2">
+                            <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">Batal</button>
+                            <button type="submit" class="flex-1 py-3 rounded-xl font-extrabold bg-yellow-400 hover:bg-yellow-500 text-slate-950 shadow-md transition">Masuk Dashboard</button>
+                        </div>
+                    </form>
+                </div>
+            `);
+        }
+
+        window.verifyTeacherLogin = function(e) {
+            e.preventDefault();
+            const pass = document.getElementById('teacher-password').value;
+            if (pass === window.AppState.teacherPassword) {
+                window.AppState.isTeacher = true;
+                updateAuthUI();
+                closeModal();
+                showToast("Selamat datang Ibu Ririn! Mode Guru Aktif.", "success");
+                navigateTo('dashboard');
+            } else {
+                showToast("Kata sandi salah! Akses ditolak.", "error");
+            }
+        };
+
+        // RENDER VIEWS
+        function renderCurrentView() {
+            const container = document.getElementById('app-content');
+            const view = window.AppState.currentView;
+            const params = window.AppState.viewParams;
+
+            switch(view) {
+                case 'home':
+                    container.innerHTML = renderHomeView();
+                    break;
+                case 'profile':
+                    container.innerHTML = renderProfileView();
+                    break;
+                case 'semester':
+                    container.innerHTML = renderSemesterView(params.sem || 1);
+                    break;
+                case 'meeting-detail':
+                    container.innerHTML = renderMeetingDetailView(params.id);
+                    break;
+                case 'grades':
+                    container.innerHTML = renderStudentGradesStatusView();
+                    break;
+                case 'dashboard':
+                    if (!window.AppState.isTeacher) {
+                        navigateTo('home');
+                        return;
+                    }
+                    container.innerHTML = renderDashboardView(params.tab || 'overview');
+                    break;
+                default:
+                    container.innerHTML = renderHomeView();
+            }
+        }
+
+        // 1. HOME VIEW RENDERER
+        function renderHomeView() {
+            const prof = window.AppState.profile;
+            return `
+                <div class="space-y-12 animate-fade-in">
+                    <!-- HERO SECTION -->
+                    <div class="relative rounded-3xl bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-500 p-8 sm:p-12 text-slate-950 shadow-soft overflow-hidden">
+                        <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-white/20 rounded-full blur-2xl pointer-events-none"></div>
+                        <div class="relative z-10 max-w-2xl space-y-6">
+                            <span class="px-4 py-1.5 rounded-full bg-white/40 backdrop-blur-md text-slate-900 text-xs font-black uppercase tracking-widest inline-flex items-center gap-2 border border-white/50">
+                                <i class="fa-solid fa-vial"></i> Media Pembelajaran Digital Kimia
+                            </span>
+                            <h1 class="text-3xl sm:text-5xl font-black leading-tight tracking-tight text-slate-950">
+                                Selamat Datang di Chemistry Learning!
+                            </h1>
+                            <p class="text-base sm:text-lg text-slate-900 font-semibold leading-relaxed">
+                                Belajar Kimia menjadi lebih mudah dan menyenangkan bersama <strong>${prof.name}</strong>. Temukan materi pembelajaran, video interaktif, latihan soal, serta informasi kegiatan belajar dalam satu tempat.
+                            </p>
+                            <div class="flex flex-wrap gap-3 pt-2">
+                                <button onclick="navigateTo('semester', {sem: 1})" class="px-6 py-3.5 rounded-2xl bg-slate-950 text-yellow-300 font-black text-xs hover:bg-slate-900 shadow-lg transition transform hover:-translate-y-0.5 flex items-center gap-2">
+                                    <i class="fa-solid fa-book-open"></i> Semester Ganjil
+                                </button>
+                                <button onclick="navigateTo('semester', {sem: 2})" class="px-6 py-3.5 rounded-2xl bg-white/70 backdrop-blur-md border border-yellow-500/30 text-slate-950 font-black text-xs hover:bg-white transition transform hover:-translate-y-0.5 flex items-center gap-2">
+                                    <i class="fa-solid fa-bookmark"></i> Semester Genap
+                                </button>
+                                <button onclick="navigateTo('profile')" class="px-6 py-3.5 rounded-2xl bg-yellow-200/60 border border-yellow-400 text-slate-950 font-extrabold text-xs hover:bg-yellow-200 transition flex items-center gap-2">
+                                    <i class="fa-solid fa-user"></i> Profil Guru
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CARD NAVIGATION GRID -->
+                    <div>
+                        <div class="text-center max-w-xl mx-auto mb-8">
+                            <h2 class="text-2xl font-black text-slate-800">Akses Cepat Pembelajaran</h2>
+                            <p class="text-xs text-slate-600 mt-1">Pilih menu di bawah ini untuk memulai aktivitas belajar Kimia Anda</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div onclick="navigateTo('profile')" class="bg-white p-6 rounded-3xl border border-yellow-200 shadow-card hover:shadow-soft transition-all transform hover:-translate-y-1 cursor-pointer group">
+                                <div class="w-14 h-14 rounded-2xl bg-yellow-100 text-yellow-700 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid fa-user-tie"></i>
+                                </div>
+                                <h3 class="font-extrabold text-lg text-slate-800 mb-2">Profil Guru</h3>
+                                <p class="text-xs text-slate-500 leading-relaxed mb-4">Informasi pengampu mata pelajaran Kimia, kontak, dan biografi Ibu Ririn.</p>
+                                <span class="text-xs font-bold text-yellow-700 flex items-center gap-1 group-hover:gap-2 transition-all">
+                                    Lihat Profil <i class="fa-solid fa-arrow-right"></i>
+                                </span>
+                            </div>
+
+                            <div onclick="navigateTo('semester', {sem: 1})" class="bg-white p-6 rounded-3xl border border-yellow-200 shadow-card hover:shadow-soft transition-all transform hover:-translate-y-1 cursor-pointer group">
+                                <div class="w-14 h-14 rounded-2xl bg-yellow-100 text-yellow-800 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid fa-flask"></i>
+                                </div>
+                                <h3 class="font-extrabold text-lg text-slate-800 mb-2">Semester Ganjil</h3>
+                                <p class="text-xs text-slate-500 leading-relaxed mb-4">Akses 16 Pertemuan materi PPT, video, dan asesmen Semester 1.</p>
+                                <span class="text-xs font-bold text-yellow-700 flex items-center gap-1 group-hover:gap-2 transition-all">
+                                    Buka Pertemuan <i class="fa-solid fa-arrow-right"></i>
+                                </span>
+                            </div>
+
+                            <div onclick="navigateTo('semester', {sem: 2})" class="bg-white p-6 rounded-3xl border border-yellow-200 shadow-card hover:shadow-soft transition-all transform hover:-translate-y-1 cursor-pointer group">
+                                <div class="w-14 h-14 rounded-2xl bg-yellow-100 text-amber-700 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid fa-atom"></i>
+                                </div>
+                                <h3 class="font-extrabold text-lg text-slate-800 mb-2">Semester Genap</h3>
+                                <p class="text-xs text-slate-500 leading-relaxed mb-4">Akses 16 Pertemuan materi lanjutan, praktikum, dan soal Semester 2.</p>
+                                <span class="text-xs font-bold text-yellow-700 flex items-center gap-1 group-hover:gap-2 transition-all">
+                                    Buka Pertemuan <i class="fa-solid fa-arrow-right"></i>
+                                </span>
+                            </div>
+
+                            <div onclick="navigateTo('grades')" class="bg-white p-6 rounded-3xl border border-yellow-200 shadow-card hover:shadow-soft transition-all transform hover:-translate-y-1 cursor-pointer group">
+                                <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid fa-chart-line"></i>
+                                </div>
+                                <h3 class="font-extrabold text-lg text-slate-800 mb-2">Status Nilai Siswa</h3>
+                                <p class="text-xs text-slate-500 leading-relaxed mb-4">Cek status ketersediaan kelengkapan nilai asesmen dan ujian Anda.</p>
+                                <span class="text-xs font-bold text-emerald-700 flex items-center gap-1 group-hover:gap-2 transition-all">
+                                    Cek Status Nilai <i class="fa-solid fa-arrow-right"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ANNOUNCEMENTS SECTION -->
+                    <div class="bg-white rounded-3xl border border-yellow-200 p-6 sm:p-8 shadow-card">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-yellow-400 text-slate-950 flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-bullhorn"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-black text-slate-800">Pengumuman & Informasi Kelas</h3>
+                                    <p class="text-xs text-slate-500">Pemberitahuan resmi terbaru dari Ibu Ririn</p>
+                                </div>
+                            </div>
+                            ${window.AppState.isTeacher ? `
+                                <button onclick="navigateTo('dashboard', {tab: 'announcements'})" class="px-4 py-2 rounded-xl bg-yellow-100 hover:bg-yellow-200 text-yellow-900 font-bold text-xs flex items-center gap-2">
+                                    <i class="fa-solid fa-pen-to-square"></i> Kelola Pengumuman
+                                </button>
+                            ` : ''}
+                        </div>
+
+                        <div class="space-y-4">
+                            ${window.AppState.announcements.length === 0 ? `
+                                <p class="text-center text-slate-400 py-6 text-sm">Belum ada pengumuman saat ini.</p>
+                            ` : window.AppState.announcements.map(ann => `
+                                <div class="p-5 rounded-2xl bg-yellow-50/70 border border-yellow-200 hover:bg-yellow-50 transition">
+                                    <div class="flex items-center justify-between gap-2 mb-2">
+                                        <span class="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-yellow-300 text-yellow-950">
+                                            ${ann.badge || 'Info'}
+                                        </span>
+                                        <span class="text-xs text-slate-400 font-semibold"><i class="fa-regular fa-clock"></i> ${ann.date}</span>
+                                    </div>
+                                    <h4 class="font-bold text-slate-800 text-base mb-1">${ann.title}</h4>
+                                    <p class="text-sm text-slate-600 leading-relaxed">${ann.content}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 2. PROFILE VIEW RENDERER
+        function renderProfileView() {
+            const prof = window.AppState.profile;
+            return `
+                <div class="max-w-4xl mx-auto space-y-8 animate-fade-in">
+                    <div class="bg-white rounded-3xl border border-yellow-200 p-8 sm:p-10 shadow-soft relative overflow-hidden">
+                        <div class="flex flex-col md:flex-row gap-8 items-center md:items-start">
+                            <div class="relative">
+                                <img src="${prof.photoUrl}" alt="${prof.name}" class="w-48 h-48 sm:w-56 sm:h-56 rounded-3xl object-cover border-4 border-yellow-400 shadow-xl" onerror="this.src='https://placehold.co/400x400/FACC15/000000?text=Ibu+Ririn'" />
+                                <div class="absolute -bottom-3 -right-3 w-12 h-12 rounded-2xl bg-yellow-400 text-slate-950 flex items-center justify-center text-xl shadow-lg">
+                                    <i class="fa-solid fa-award"></i>
+                                </div>
+                            </div>
+                            <div class="flex-1 text-center md:text-left space-y-4">
+                                <div>
+                                    <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-900 text-xs font-bold uppercase tracking-wider">Guru Pengampu Kimia</span>
+                                    <h1 class="text-3xl font-black text-slate-800 mt-2">${prof.name}</h1>
+                                    <p class="text-base font-bold text-yellow-800">${prof.subject} &bull; ${prof.school}</p>
+                                </div>
+                                <p class="text-slate-600 text-sm leading-relaxed">${prof.bio}</p>
+                                
+                                <div class="pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-semibold text-slate-600">
+                                    <div class="flex items-center gap-3 p-3 rounded-xl bg-yellow-50">
+                                        <i class="fa-solid fa-envelope text-yellow-700 text-base"></i>
+                                        <span>${prof.email}</span>
+                                    </div>
+                                    <div class="flex items-center gap-3 p-3 rounded-xl bg-yellow-50">
+                                        <i class="fa-solid fa-clock text-yellow-700 text-base"></i>
+                                        <span>${prof.officeHours}</span>
+                                    </div>
+                                </div>
+
+                                ${window.AppState.isTeacher ? `
+                                    <div class="pt-2">
+                                        <button onclick="navigateTo('dashboard', {tab: 'profile'})" class="px-5 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-extrabold text-xs shadow-md transition flex items-center gap-2">
+                                            <i class="fa-solid fa-user-pen"></i> Edit Profil Guru
+                                        </button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 3. SEMESTER VIEW (16 Meetings per semester)
+        function renderSemesterView(semNumber) {
+            const semTitle = semNumber === 1 ? "Semester Ganjil" : "Semester Genap";
+            const meetings = Object.values(window.AppState.meetings)
+                .filter(m => m.semester === semNumber)
+                .sort((a, b) => a.number - b.number);
+
+            return `
+                <div class="space-y-8 animate-fade-in">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 sm:p-8 rounded-3xl border border-yellow-200 shadow-card">
+                        <div>
+                            <span class="text-xs font-black uppercase tracking-widest text-yellow-800">Kurikulum Pembelajaran</span>
+                            <h1 class="text-3xl font-black text-slate-800">${semTitle}</h1>
+                            <p class="text-xs text-slate-500 mt-1">Daftar 16 Pertemuan Pembelajaran Kimia Bersama Ibu Ririn</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="navigateTo('semester', {sem: 1})" class="px-4 py-2 rounded-xl text-xs font-bold ${semNumber === 1 ? 'bg-yellow-400 text-slate-950 shadow-sm' : 'bg-yellow-50 text-slate-700 hover:bg-yellow-100'} transition">Semester Ganjil</button>
+                            <button onclick="navigateTo('semester', {sem: 2})" class="px-4 py-2 rounded-xl text-xs font-bold ${semNumber === 2 ? 'bg-yellow-400 text-slate-950 shadow-sm' : 'bg-yellow-50 text-slate-700 hover:bg-yellow-100'} transition">Semester Genap</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        ${meetings.map(m => `
+                            <div class="bg-white rounded-3xl border border-yellow-200 p-6 shadow-card hover:shadow-soft transition-all flex flex-col justify-between group">
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between">
+                                        <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-900 font-extrabold text-xs">
+                                            Pertemuan ${m.number}
+                                        </span>
+                                        <i class="fa-solid fa-atom text-yellow-500 opacity-60 group-hover:rotate-45 transition-transform"></i>
+                                    </div>
+                                    <h3 class="font-black text-slate-800 text-base leading-snug line-clamp-2">
+                                        ${m.title}
+                                    </h3>
+                                    <p class="text-xs text-slate-500 line-clamp-3 leading-relaxed">
+                                        ${m.objective || 'Tujuan pembelajaran belum diisi.'}
+                                    </p>
+                                </div>
+                                <div class="pt-5 mt-4 border-t border-slate-100 flex items-center justify-between">
+                                    <button onclick="navigateTo('meeting-detail', {id: '${m.id}'})" class="w-full py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-extrabold text-xs shadow-md shadow-yellow-400/20 transition flex items-center justify-center gap-2">
+                                        <span>Buka Pembelajaran</span>
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // 4. MEETING DETAIL VIEW RENDERER
+        function renderMeetingDetailView(meetingId) {
+            const meeting = window.AppState.meetings[meetingId];
+            if (!meeting) return `<div class="text-center py-12 font-bold text-slate-500">Pertemuan tidak ditemukan.</div>`;
+
+            const currentSem = meeting.semester;
+            const currentNum = meeting.number;
+            const prevId = currentNum > 1 ? `sem${currentSem}_m${currentNum - 1}` : null;
+            const nextId = currentNum < 16 ? `sem${currentSem}_m${currentNum + 1}` : null;
+
+            return `
+                <div class="max-w-5xl mx-auto space-y-8 animate-fade-in">
+                    <div class="flex items-center justify-between">
+                        <button onclick="navigateTo('semester', {sem: ${currentSem}})" class="px-4 py-2 rounded-xl bg-white border border-yellow-300 text-slate-700 font-bold text-xs hover:bg-yellow-50 transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-chevron-left"></i> Kembali ke Semester ${currentSem === 1 ? 'Ganjil' : 'Genap'}
+                        </button>
+                        ${window.AppState.isTeacher ? `
+                            <button onclick="navigateTo('dashboard', {tab: 'meetings', editId: '${meeting.id}'})" class="px-4 py-2 rounded-xl bg-yellow-400 text-slate-950 font-extrabold text-xs hover:bg-yellow-500 shadow-md transition flex items-center gap-2">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit Pertemuan Ini
+                            </button>
+                        ` : ''}
+                    </div>
+
+                    <div class="bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-500 rounded-3xl p-8 text-slate-950 shadow-soft">
+                        <span class="px-3.5 py-1 rounded-full bg-white/40 backdrop-blur-md text-slate-950 text-xs font-black uppercase tracking-wider inline-block mb-3 border border-white/50">
+                            Semester ${meeting.semester} &bull; Pertemuan ${meeting.number}
+                        </span>
+                        <h1 class="text-2xl sm:text-4xl font-black leading-tight">${meeting.title}</h1>
+                    </div>
+
+                    <!-- TUJUAN PEMBELAJARAN -->
+                    <div class="bg-white rounded-3xl border border-yellow-200 p-6 sm:p-8 shadow-card space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-yellow-100 text-yellow-800 flex items-center justify-center font-bold text-lg">
+                                <i class="fa-solid fa-bullseye"></i>
+                            </div>
+                            <h2 class="text-xl font-black text-slate-800">Tujuan Pembelajaran</h2>
+                        </div>
+                        <p class="text-sm text-slate-700 leading-relaxed bg-yellow-50/60 p-4 rounded-2xl border border-yellow-200 font-medium">
+                            ${meeting.objective || 'Tujuan pembelajaran belum ditentukan oleh Ibu Ririn.'}
+                        </p>
+                    </div>
+
+                    <!-- MATERI PPT -->
+                    <div class="bg-white rounded-3xl border border-yellow-200 p-6 sm:p-8 shadow-card space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-lg">
+                                    <i class="fa-solid fa-file-powerpoint"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-black text-slate-800">Materi Pembelajaran (PPT)</h2>
+                                    <p class="text-xs text-slate-500">Bahan tayang modul pembelajaran</p>
+                                </div>
+                            </div>
+                            ${meeting.pptUrl ? `
+                                <a href="${meeting.pptUrl}" target="_blank" class="px-4 py-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-extrabold text-xs shadow-md transition flex items-center gap-2">
+                                    <i class="fa-solid fa-up-right-from-square"></i> Buka PPT Fullscreen
+                                </a>
+                            ` : ''}
+                        </div>
+
+                        ${meeting.pptUrl ? `
+                            <div class="aspect-video w-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 shadow-inner">
+                                <iframe src="${meeting.pptUrl}" class="w-full h-full border-0" title="Presentation Preview"></iframe>
+                            </div>
+                        ` : `
+                            <div class="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-300">
+                                <i class="fa-solid fa-folder-open text-4xl text-slate-300 mb-2"></i>
+                                <p class="text-sm font-semibold text-slate-500">Materi belum tersedia</p>
+                            </div>
+                        `}
+                    </div>
+
+                    <!-- VIDEO PEMBELAJARAN -->
+                    <div class="bg-white rounded-3xl border border-yellow-200 p-6 sm:p-8 shadow-card space-y-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center font-bold text-lg">
+                                <i class="fa-solid fa-circle-play"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-black text-slate-800">Video Pembelajaran</h2>
+                                <p class="text-xs text-slate-500">Penjelasan konsep & peragaan praktikum</p>
+                            </div>
+                        </div>
+
+                        ${meeting.videoUrl ? `
+                            <div class="aspect-video w-full rounded-2xl overflow-hidden border border-slate-200 bg-black shadow-inner">
+                                <iframe src="${meeting.videoUrl}" class="w-full h-full border-0" allowfullscreen title="Video Preview"></iframe>
+                            </div>
+                        ` : `
+                            <div class="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-300">
+                                <i class="fa-solid fa-video-slash text-4xl text-slate-300 mb-2"></i>
+                                <p class="text-sm font-semibold text-slate-500">Video belum tersedia</p>
+                            </div>
+                        `}
+                    </div>
+
+                    <!-- ASESMEN MS FORMS -->
+                    <div class="bg-white rounded-3xl border border-yellow-200 p-6 sm:p-8 shadow-card space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-lg">
+                                    <i class="fa-solid fa-clipboard-question"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-black text-slate-800">Asesmen & Latihan Soal</h2>
+                                    <p class="text-xs text-slate-500">Kuis interaktif via Microsoft Forms</p>
+                                </div>
+                            </div>
+                            ${meeting.formsUrl ? `
+                                <a href="${meeting.formsUrl}" target="_blank" class="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs shadow-md transition flex items-center gap-2">
+                                    <i class="fa-solid fa-square-poll-vertical"></i> Kerjakan Asesmen di Tab Baru
+                                </a>
+                            ` : ''}
+                        </div>
+
+                        ${meeting.formsUrl ? `
+                            <div class="w-full h-[500px] rounded-2xl border border-slate-200 overflow-hidden bg-slate-50">
+                                <iframe src="${meeting.formsUrl}" class="w-full h-full border-0" title="Assessment Forms"></iframe>
+                            </div>
+                        ` : `
+                            <div class="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-300">
+                                <i class="fa-solid fa-clipboard-check text-4xl text-slate-300 mb-2"></i>
+                                <p class="text-sm font-semibold text-slate-500">Asesmen belum tersedia</p>
+                            </div>
+                        `}
+                    </div>
+
+                    <div class="flex items-center justify-between pt-4">
+                        ${prevId ? `
+                            <button onclick="navigateTo('meeting-detail', {id: '${prevId}'})" class="px-5 py-3 rounded-2xl bg-white border border-yellow-300 text-slate-700 font-bold text-xs hover:bg-yellow-50 transition shadow-card flex items-center gap-2">
+                                <i class="fa-solid fa-arrow-left"></i> Pertemuan Sebelumnya
+                            </button>
+                        ` : `<div></div>`}
+
+                        <button onclick="navigateTo('semester', {sem: ${currentSem}})" class="px-4 py-3 rounded-2xl bg-yellow-100 text-yellow-950 font-bold text-xs hover:bg-yellow-200 transition">
+                            Daftar Pertemuan
+                        </button>
+
+                        ${nextId ? `
+                            <button onclick="navigateTo('meeting-detail', {id: '${nextId}'})" class="px-5 py-3 rounded-2xl bg-yellow-400 text-slate-950 font-extrabold text-xs hover:bg-yellow-500 transition shadow-md flex items-center gap-2">
+                                Pertemuan Berikutnya <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        ` : `<div></div>`}
+                    </div>
+                </div>
+            `;
+        }
+
+        // 5. PUBLIC GRADES STATUS VIEW (PRIVACY GUARANTEED: COLOR INDICATORS ONLY)
+        function renderStudentGradesStatusView() {
+            const selectedClassId = window.AppState.viewParams.selectedClass || (window.AppState.classes[0]?.id || '');
+            const searchQuery = (window.AppState.viewParams.search || '').toLowerCase();
+
+            const classStudents = window.AppState.students.filter(s => s.classId === selectedClassId && s.name.toLowerCase().includes(searchQuery));
+            const gradesData = window.AppState.grades;
+
+            return `
+                <div class="space-y-6 animate-fade-in">
+                    <div class="bg-white p-6 sm:p-8 rounded-3xl border border-yellow-200 shadow-card flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <span class="text-xs font-black uppercase tracking-widest text-emerald-600">Transparansi Nilai</span>
+                            <h1 class="text-3xl font-black text-slate-800">Status Ketersediaan Nilai Siswa</h1>
+                            <p class="text-xs text-slate-500 mt-1">Status hijau menandakan nilai telah tersimpan di sistem Ibu Ririn.</p>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                            <select onchange="navigateTo('grades', {selectedClass: this.value, search: '${searchQuery}'})" class="px-4 py-2.5 rounded-xl border border-yellow-300 font-bold text-xs bg-yellow-50 text-yellow-950 outline-none">
+                                ${window.AppState.classes.map(c => `
+                                    <option value="${c.id}" ${c.id === selectedClassId ? 'selected' : ''}>Kelas ${c.name}</option>
+                                `).join('')}
+                            </select>
+                            <input type="text" placeholder="Cari Nama Siswa..." value="${searchQuery}" onkeyup="if(event.key==='Enter') navigateTo('grades', {selectedClass: '${selectedClassId}', search: this.value})" class="px-4 py-2.5 rounded-xl border border-yellow-300 text-xs outline-none w-full sm:w-48" />
+                        </div>
+                    </div>
+
+                    <div class="bg-yellow-50/90 border border-yellow-200 p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 text-xs font-semibold text-slate-700">
+                        <div class="flex items-center gap-6">
+                            <div class="flex items-center gap-2">
+                                <span class="w-4 h-4 rounded-md bg-emerald-500 inline-block shadow-sm"></span>
+                                <span><strong>Hijau:</strong> Nilai Sudah Diinput</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-4 h-4 rounded-md bg-rose-500 inline-block shadow-sm"></span>
+                                <span><strong>Merah:</strong> Nilai Belum Diinput</span>
+                            </div>
+                        </div>
+                        <span class="text-slate-600 italic"><i class="fa-solid fa-shield-halved text-yellow-700"></i> Keamanan Privasi: Angka nilai asli hanya dapat diakses oleh Ibu Ririn.</span>
+                    </div>
+
+                    <div class="bg-white rounded-3xl border border-yellow-200 shadow-card overflow-hidden">
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="bg-yellow-100/90 border-b border-yellow-200 text-yellow-950 font-black uppercase tracking-wider">
+                                        <th class="p-4 sticky left-0 bg-yellow-100 z-10 w-12 text-center">No</th>
+                                        <th class="p-4 sticky left-12 bg-yellow-100 z-10 min-w-[180px]">Nama Siswa</th>
+                                        ${window.GradeComponents.map(c => `
+                                            <th class="p-3 text-center min-w-[70px]" title="${c.label}">${c.label.replace('Asesmen ', 'A-')}</th>
+                                        `).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+                                    ${classStudents.length === 0 ? `
+                                        <tr><td colspan="23" class="p-8 text-center text-slate-400 font-bold">Belum ada data siswa di kelas ini.</td></tr>
+                                    ` : classStudents.map((s, idx) => {
+                                        const stGrades = gradesData[s.id] || {};
+                                        return `
+                                            <tr class="hover:bg-yellow-50/40 transition">
+                                                <td class="p-4 text-center sticky left-0 bg-white group-hover:bg-yellow-50 font-bold">${idx + 1}</td>
+                                                <td class="p-4 font-bold text-slate-800 sticky left-12 bg-white group-hover:bg-yellow-50 whitespace-nowrap shadow-sm">${s.name}</td>
+                                                ${window.GradeComponents.map(comp => {
+                                                    const val = stGrades[comp.id];
+                                                    const isSet = (val !== undefined && val !== null && val !== '');
+                                                    return `
+                                                        <td class="p-3 text-center">
+                                                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg text-[10px] font-bold text-white shadow-sm ${isSet ? 'bg-emerald-500' : 'bg-rose-500'}" title="${s.name} - ${comp.label}: ${isSet ? 'Tersedia' : 'Belum Tersedia'}">
+                                                                <i class="fa-solid ${isSet ? 'fa-check' : 'fa-xmark'}"></i>
+                                                            </span>
+                                                        </td>
+                                                    `;
+                                                }).join('')}
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 6. DASHBOARD VUE CONTROLLER
+        function renderDashboardView(tab) {
+            return `
+                <div class="space-y-8 animate-fade-in">
+                    <div class="bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 rounded-3xl p-6 sm:p-8 text-slate-950 shadow-soft flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <span class="px-3.5 py-1 rounded-full bg-white/40 text-xs font-black uppercase tracking-wider">Halaman Administrasi Guru</span>
+                            <h1 class="text-3xl font-black mt-1">Dashboard Pengelolaan Ibu Ririn</h1>
+                            <p class="text-xs text-slate-900 mt-1 font-semibold">Pusat kendali materi, pengumuman, kelas, siswa, input nilai, & keamanan akun.</p>
+                        </div>
+                        <button onclick="handleAuthAction()" class="px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 font-extrabold text-xs text-yellow-300 transition flex items-center gap-2">
+                            <i class="fa-solid fa-right-from-bracket"></i> Keluar Dashboard
+                        </button>
+                    </div>
+
+                    <!-- DASHBOARD TAB NAV -->
+                    <div class="flex items-center gap-2 border-b border-yellow-200 pb-2 overflow-x-auto custom-scrollbar">
+                        <button onclick="navigateTo('dashboard', {tab: 'overview'})" class="px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap ${tab === 'overview' ? 'bg-yellow-400 text-slate-950 shadow-sm' : 'bg-white text-slate-700 hover:bg-yellow-100'} transition">Ringkasan</button>
+                        <button onclick="navigateTo('dashboard', {tab: 'profile'})" class="px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap ${tab === 'profile' ? 'bg-yellow-400 text-slate-950 shadow-sm' : 'bg-white text-slate-700 hover:bg-yellow-100'} transition">Profil Guru</button>
+                        <button onclick="navigateTo('dashboard', {tab: 'security'})" class="px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap ${tab === 'security' ? 'bg-yellow-400 text-slate-950 shadow-sm' : 'bg-white text-slate-700 hover:bg-yellow-100'} transition"><i class="fa-solid fa-key"></i> Ganti Password</button>
+                        <button onclick="navigateTo('dashboard', {tab: 'announcements'})" class="px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap ${tab === 'announcements' ? 'bg-yellow-400 text-slate-950 shadow-sm' : 'bg-white text-slate-700 hover:bg-yellow-100'} transition">Pengumuman</button>
+                        <button onclick="navigateTo('dashboard', {tab: 'meetings'})" class="px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap ${tab === 'meetings' ? 'bg-yellow-400 text-slate-950 shadow-sm' : 'bg-white text-slate-700 hover:bg-yellow-100'} transition">Kelola 32 Pertemuan</button>
+                        <button onclick="navigateTo('dashboard', {tab: 'classes'})" class="px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap ${tab === 'classes' ? 'bg-yellow-400 text-slate-950 shadow-sm' : 'bg-white text-slate-700 hover:bg-yellow-100'} transition">Kelola Kelas</button>
+                        <button onclick="navigateTo('dashboard', {tab: 'students'})" class="px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap ${tab === 'students' ? 'bg-yellow-400 text-slate-950 shadow-sm' : 'bg-white text-slate-700 hover:bg-yellow-100'} transition">Kelola Siswa</button>
+                        <button onclick="navigateTo('dashboard', {tab: 'grades'})" class="px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap ${tab === 'grades' ? 'bg-yellow-400 text-slate-950 shadow-sm' : 'bg-white text-slate-700 hover:bg-yellow-100'} transition">Input & Rekap Nilai</button>
+                    </div>
+
+                    ${renderDashboardTabContent(tab)}
+                </div>
+            `;
+        }
+
+        function renderDashboardTabContent(tab) {
+            switch(tab) {
+                case 'overview': return renderDashboardOverview();
+                case 'profile': return renderDashboardProfileEdit();
+                case 'security': return renderDashboardSecurity();
+                case 'announcements': return renderDashboardAnnouncements();
+                case 'meetings': return renderDashboardMeetings();
+                case 'classes': return renderDashboardClasses();
+                case 'students': return renderDashboardStudents();
+                case 'grades': return renderDashboardGrades();
+                default: return renderDashboardOverview();
+            }
+        }
+
+        // 6A. RINGKASAN STATS
+        function renderDashboardOverview() {
+            const totalClasses = window.AppState.classes.length;
+            const totalStudents = window.AppState.students.length;
+            const totalMeetings = Object.keys(window.AppState.meetings).length;
+
+            let filledGradesCount = 0;
+            const totalPossibleGrades = totalStudents * 20;
+
+            window.AppState.students.forEach(s => {
+                const stG = window.AppState.grades[s.id] || {};
+                window.GradeComponents.forEach(c => {
+                    const val = stG[c.id];
+                    if (val !== undefined && val !== null && val !== '') filledGradesCount++;
+                });
+            });
+
+            const missingGradesCount = totalPossibleGrades - filledGradesCount;
+            const completionRate = totalPossibleGrades > 0 ? ((filledGradesCount / totalPossibleGrades) * 100).toFixed(1) : 0;
+
+            return `
+                <div class="space-y-8">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-3xl border border-yellow-200 shadow-card flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-yellow-100 text-yellow-800 flex items-center justify-center text-2xl font-bold">
+                                <i class="fa-solid fa-school"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Jumlah Kelas</p>
+                                <h3 class="text-3xl font-black text-slate-800">${totalClasses}</h3>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-3xl border border-yellow-200 shadow-card flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-2xl font-bold">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Siswa Terdaftar</p>
+                                <h3 class="text-3xl font-black text-slate-800">${totalStudents}</h3>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-3xl border border-yellow-200 shadow-card flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-teal-100 text-teal-800 flex items-center justify-center text-2xl font-bold">
+                                <i class="fa-solid fa-book-open"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Pertemuan</p>
+                                <h3 class="text-3xl font-black text-slate-800">${totalMeetings}</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 sm:p-8 rounded-3xl border border-yellow-200 shadow-card space-y-6">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div>
+                                <h3 class="text-xl font-black text-slate-800">Rekapitulasi Kelengkapan Nilai Siswa</h3>
+                                <p class="text-xs text-slate-500">Persentase pengisian 20 komponen nilai untuk seluruh peserta didik</p>
+                            </div>
+                            <span class="px-4 py-2 rounded-2xl bg-emerald-100 text-emerald-800 font-black text-lg">
+                                ${completionRate}% Selesai
+                            </span>
+                        </div>
+
+                        <div class="w-full h-4 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
+                            <div class="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-500" style="width: ${completionRate}%"></div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-bold">
+                            <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
+                                <span class="text-emerald-800">Nilai Sudah Diinput:</span>
+                                <span class="text-emerald-950 font-black text-base">${filledGradesCount} Data</span>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-between">
+                                <span class="text-rose-800">Nilai Belum Diinput:</span>
+                                <span class="text-rose-950 font-black text-base">${missingGradesCount} Data</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 6B. EDIT PROFIL GURU
+        function renderDashboardProfileEdit() {
+            const prof = window.AppState.profile;
+            return `
+                <div class="bg-white p-6 sm:p-8 rounded-3xl border border-yellow-200 shadow-card max-w-3xl space-y-6">
+                    <h3 class="text-xl font-black text-slate-800">Kelola Informasi Profil Guru</h3>
+                    <form onsubmit="saveProfileChanges(event)" class="space-y-4 text-xs font-bold text-slate-700">
+                        <div>
+                            <label class="block mb-1">Nama Lengkap Guru</label>
+                            <input type="text" id="prof-name" value="${prof.name}" class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none" required />
+                        </div>
+                        <div>
+                            <label class="block mb-1">Mata Pelajaran</label>
+                            <input type="text" id="prof-subject" value="${prof.subject}" class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none" required />
+                        </div>
+                        <div>
+                            <label class="block mb-1">Nama Sekolah</label>
+                            <input type="text" id="prof-school" value="${prof.school}" class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none" required />
+                        </div>
+                        <div>
+                            <label class="block mb-1">URL Foto Profil</label>
+                            <input type="url" id="prof-photo" value="${prof.photoUrl}" class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none" required />
+                        </div>
+                        <div>
+                            <label class="block mb-1">Deskripsi & Biografi Singkat</label>
+                            <textarea id="prof-bio" rows="4" class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none" required>${prof.bio}</textarea>
+                        </div>
+                        <button type="submit" class="px-6 py-3 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-extrabold shadow-md transition">Simpan Perubahan Profil</button>
+                    </form>
+                </div>
+            `;
+        }
+
+        window.saveProfileChanges = function(e) {
+            e.preventDefault();
+            const updated = {
+                name: document.getElementById('prof-name').value,
+                subject: document.getElementById('prof-subject').value,
+                school: document.getElementById('prof-school').value,
+                photoUrl: document.getElementById('prof-photo').value,
+                bio: document.getElementById('prof-bio').value
+            };
+            window.AppState.profile = { ...window.AppState.profile, ...updated };
+            window.saveDataToStore('app_settings', 'profile', updated);
+        };
+
+        // 6C. PENGATURAN PASSWORD (NEW FEATURE)
+        function renderDashboardSecurity() {
+            return `
+                <div class="bg-white p-6 sm:p-8 rounded-3xl border border-yellow-200 shadow-card max-w-xl space-y-6">
+                    <div>
+                        <h3 class="text-xl font-black text-slate-800">Pengaturan Keamanan & Password</h3>
+                        <p class="text-xs text-slate-500 mt-1">Ubah kata sandi login guru Ibu Ririn secara berkala untuk menjaga kerahasiaan data nilai.</p>
+                    </div>
+
+                    <form onsubmit="changeTeacherPassword(event)" class="space-y-4 text-xs font-bold text-slate-700">
+                        <div>
+                            <label class="block mb-1">Kata Sandi Baru</label>
+                            <input type="password" id="new-password" class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none focus:ring-2 focus:ring-yellow-400" placeholder="Masukkan password baru..." required />
+                        </div>
+                        <div>
+                            <label class="block mb-1">Konfirmasi Kata Sandi Baru</label>
+                            <input type="password" id="confirm-password" class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none focus:ring-2 focus:ring-yellow-400" placeholder="Ulangi password baru..." required />
+                        </div>
+                        <button type="submit" class="px-6 py-3 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-extrabold shadow-md transition">Update Kata Sandi</button>
+                    </form>
+                </div>
+            `;
+        }
+
+        window.changeTeacherPassword = function(e) {
+            e.preventDefault();
+            const newP = document.getElementById('new-password').value;
+            const confP = document.getElementById('confirm-password').value;
+
+            if (newP !== confP) {
+                showToast("Konfirmasi password tidak cocok!", "error");
+                return;
+            }
+            if (newP.length < 4) {
+                showToast("Password minimal 4 karakter!", "warning");
+                return;
+            }
+
+            window.AppState.teacherPassword = newP;
+            localStorage.setItem('chem_teacher_password', newP);
+            window.saveDataToStore('app_settings', 'security', { password: newP });
+            showToast("Kata sandi guru berhasil diubah!", "success");
+            e.target.reset();
+        };
+
+        // 6D. KELOLA PENGUMUMAN
+        function renderDashboardAnnouncements() {
+            return `
+                <div class="space-y-6">
+                    <div class="bg-white p-6 sm:p-8 rounded-3xl border border-yellow-200 shadow-card space-y-4">
+                        <h3 class="text-xl font-black text-slate-800">Tambah Pengumuman Baru</h3>
+                        <form onsubmit="addAnnouncement(event)" class="space-y-4 text-xs font-bold">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block mb-1">Judul Pengumuman</label>
+                                    <input type="text" id="ann-title" class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none" placeholder="Contoh: Jadwal UTS Kimia" required />
+                                </div>
+                                <div>
+                                    <label class="block mb-1">Label / Badge</label>
+                                    <input type="text" id="ann-badge" class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none" placeholder="Penting / Tugas / Info" required />
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block mb-1">Isi Pengumuman</label>
+                                <textarea id="ann-content" rows="3" class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none" placeholder="Tuliskan pesan untuk peserta didik..." required></textarea>
+                            </div>
+                            <button type="submit" class="px-6 py-3 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-extrabold text-xs shadow-md transition">+ Publikasikan Pengumuman</button>
+                        </form>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-3xl border border-yellow-200 shadow-card space-y-4">
+                        <h3 class="text-lg font-bold text-slate-800">Daftar Pengumuman Aktif</h3>
+                        <div class="space-y-3">
+                            ${window.AppState.announcements.map((ann, idx) => `
+                                <div class="p-4 rounded-2xl bg-yellow-50 border border-yellow-200 flex items-center justify-between gap-4">
+                                    <div>
+                                        <span class="px-2.5 py-0.5 rounded-full bg-yellow-200 text-yellow-950 text-[10px] font-extrabold uppercase">${ann.badge}</span>
+                                        <h4 class="font-bold text-slate-800 text-sm mt-1">${ann.title}</h4>
+                                        <p class="text-xs text-slate-600">${ann.content}</p>
+                                    </div>
+                                    <button onclick="deleteAnnouncement(${idx})" class="p-2.5 rounded-xl bg-rose-100 text-rose-600 hover:bg-rose-200 font-bold transition">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.addAnnouncement = function(e) {
+            e.preventDefault();
+            const newAnn = {
+                id: Date.now().toString(),
+                date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+                title: document.getElementById('ann-title').value,
+                badge: document.getElementById('ann-badge').value,
+                content: document.getElementById('ann-content').value
+            };
+            window.AppState.announcements.unshift(newAnn);
+            window.saveDataToStore('app_settings', 'announcements', { list: window.AppState.announcements });
+            e.target.reset();
+        };
+
+        window.deleteAnnouncement = function(index) {
+            window.AppState.announcements.splice(index, 1);
+            window.saveDataToStore('app_settings', 'announcements', { list: window.AppState.announcements });
+        };
+
+        // 6E. KELOLA PERTEMUAN (32 MEETINGS)
+        function renderDashboardMeetings() {
+            const editId = window.AppState.viewParams.editId || 'sem1_m1';
+            const m = window.AppState.meetings[editId] || window.AppState.meetings['sem1_m1'];
+
+            return `
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="bg-white p-6 rounded-3xl border border-yellow-200 shadow-card space-y-4 max-h-[700px] overflow-y-auto custom-scrollbar">
+                        <h3 class="font-black text-slate-800 text-base">Pilih Pertemuan (32)</h3>
+                        <div class="space-y-2">
+                            <p class="text-xs font-black text-yellow-800 uppercase tracking-wider">Semester Ganjil (1-16)</p>
+                            ${Array.from({length: 16}, (_, i) => `sem1_m${i+1}`).map(id => {
+                                const item = window.AppState.meetings[id];
+                                return `
+                                    <button onclick="navigateTo('dashboard', {tab: 'meetings', editId: '${id}'})" class="w-full text-left p-3 rounded-xl border text-xs font-bold transition flex items-center justify-between ${id === editId ? 'bg-yellow-400 text-slate-950 border-yellow-400 shadow-sm font-black' : 'bg-slate-50 border-slate-200 hover:bg-yellow-50 text-slate-700'}">
+                                        <span class="truncate">P-${item.number}: ${item.title}</span>
+                                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                                    </button>
+                                `;
+                            }).join('')}
+
+                            <p class="text-xs font-black text-yellow-800 uppercase tracking-wider pt-4">Semester Genap (1-16)</p>
+                            ${Array.from({length: 16}, (_, i) => `sem2_m${i+1}`).map(id => {
+                                const item = window.AppState.meetings[id];
+                                return `
+                                    <button onclick="navigateTo('dashboard', {tab: 'meetings', editId: '${id}'})" class="w-full text-left p-3 rounded-xl border text-xs font-bold transition flex items-center justify-between ${id === editId ? 'bg-yellow-400 text-slate-950 border-yellow-400 shadow-sm font-black' : 'bg-slate-50 border-slate-200 hover:bg-yellow-50 text-slate-700'}">
+                                        <span class="truncate">P-${item.number}: ${item.title}</span>
+                                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2 bg-white p-6 sm:p-8 rounded-3xl border border-yellow-200 shadow-card space-y-6">
+                        <div class="flex items-center justify-between border-b border-yellow-100 pb-4">
+                            <div>
+                                <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-900 text-[10px] font-extrabold uppercase">
+                                    Semester ${m.semester} &bull; Pertemuan ${m.number}
+                                </span>
+                                <h3 class="text-xl font-black text-slate-800 mt-1">Edit Konten Pertemuan</h3>
+                            </div>
+                            <button onclick="navigateTo('meeting-detail', {id: '${m.id}'})" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 font-bold text-xs text-slate-700 transition">
+                                <i class="fa-solid fa-eye"></i> Pratinjau Tampilan
+                            </button>
+                        </div>
+
+                        <form onsubmit="saveMeetingDetails(event, '${m.id}')" class="space-y-4 text-xs font-bold text-slate-700">
+                            <div>
+                                <label class="block mb-1">Judul Pertemuan & Materi</label>
+                                <input type="text" id="m-title" value="${m.title}" class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none" required />
+                            </div>
+                            <div>
+                                <label class="block mb-1">Tujuan Pembelajaran</label>
+                                <textarea id="m-objective" rows="3" class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none" required>${m.objective || ''}</textarea>
+                            </div>
+                            <div>
+                                <label class="block mb-1">Tautan PPT / Google Drive Embed</label>
+                                <input type="url" id="m-ppt" value="${m.pptUrl || ''}" placeholder="https://docs.google.com/presentation/..." class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none" />
+                            </div>
+                            <div>
+                                <label class="block mb-1">Tautan Video YouTube Embed</label>
+                                <input type="url" id="m-video" value="${m.videoUrl || ''}" placeholder="https://www.youtube.com/embed/..." class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none" />
+                            </div>
+                            <div>
+                                <label class="block mb-1">Tautan Microsoft Forms (Asesmen)</label>
+                                <input type="url" id="m-forms" value="${m.formsUrl || ''}" placeholder="https://forms.office.com/r/..." class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none" />
+                            </div>
+                            <button type="submit" class="px-6 py-3 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-extrabold shadow-md transition">Simpan Konten Pertemuan</button>
+                        </form>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.saveMeetingDetails = function(e, meetingId) {
+            e.preventDefault();
+            const updated = {
+                ...window.AppState.meetings[meetingId],
+                title: document.getElementById('m-title').value,
+                objective: document.getElementById('m-objective').value,
+                pptUrl: document.getElementById('m-ppt').value,
+                videoUrl: document.getElementById('m-video').value,
+                formsUrl: document.getElementById('m-forms').value
+            };
+            window.AppState.meetings[meetingId] = updated;
+            window.saveDataToStore('app_meetings', 'all', { data: window.AppState.meetings });
+        };
+
+        // 7. KELOLA KELAS
+        function renderDashboardClasses() {
+            return `
+                <div class="space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-yellow-200 shadow-card">
+                        <div>
+                            <h3 class="text-xl font-black text-slate-800">Sistem Pengelolaan Kelas</h3>
+                            <p class="text-xs text-slate-500">Kelola 6 kelas awal (X.1 – X.6) dan tambah kelas baru kapan saja.</p>
+                        </div>
+                        <button onclick="showAddClassModal()" class="px-5 py-3 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-extrabold text-xs shadow-md transition flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Tambah Kelas Baru
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        ${window.AppState.classes.map(c => {
+                            const count = window.AppState.students.filter(s => s.classId === c.id).length;
+                            return `
+                                <div class="bg-white p-6 rounded-3xl border border-yellow-200 shadow-card space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <div class="w-12 h-12 rounded-2xl bg-yellow-100 text-yellow-900 flex items-center justify-center font-black text-xl">
+                                            ${c.name}
+                                        </div>
+                                        <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold">${count} Siswa</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-black text-slate-800 text-lg">Kelas ${c.name}</h4>
+                                        <p class="text-xs text-slate-500">Kapasitas Awal Target: ${c.capacity} Siswa</p>
+                                    </div>
+                                    <div class="pt-4 border-t border-slate-100 flex gap-2">
+                                        <button onclick="navigateTo('dashboard', {tab: 'students', selectedClass: '${c.id}'})" class="flex-1 py-2 rounded-xl bg-yellow-100 text-yellow-950 hover:bg-yellow-200 font-bold text-xs transition">Lihat Siswa</button>
+                                        <button onclick="deleteClassConfirm('${c.id}')" class="p-2 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold text-xs transition"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        window.showAddClassModal = function() {
+            showModal(`
+                <div class="space-y-4">
+                    <h3 class="text-xl font-black text-slate-800">Tambah Kelas Baru</h3>
+                    <form onsubmit="addClassSubmit(event)" class="space-y-4 text-xs font-bold text-slate-700">
+                        <div>
+                            <label class="block mb-1">Nama Kelas (Contoh: X.7)</label>
+                            <input type="text" id="new-class-name" class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none" required />
+                        </div>
+                        <div>
+                            <label class="block mb-1">Kapasitas Target Siswa</label>
+                            <input type="number" id="new-class-cap" value="30" class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none" required />
+                        </div>
+                        <div class="flex gap-3 pt-2">
+                            <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl bg-slate-100 font-bold text-slate-700">Batal</button>
+                            <button type="submit" class="flex-1 py-3 rounded-xl bg-yellow-400 font-extrabold text-slate-950 shadow-md">Simpan Kelas</button>
+                        </div>
+                    </form>
+                </div>
+            `);
+        };
+
+        window.addClassSubmit = function(e) {
+            e.preventDefault();
+            const cName = document.getElementById('new-class-name').value;
+            const cCap = parseInt(document.getElementById('new-class-cap').value, 10);
+            
+            const newClass = { id: cName, name: cName, capacity: cCap, level: 'X' };
+            window.AppState.classes.push(newClass);
+            window.saveDataToStore('app_classes', 'list', { classes: window.AppState.classes });
+            closeModal();
+        };
+
+        window.deleteClassConfirm = function(classId) {
+            const hasStudents = window.AppState.students.some(s => s.classId === classId);
+            if (hasStudents) {
+                showToast("Peringatan: Kelas ini memiliki siswa terdaftar! Pindahkan siswa terlebih dahulu.", "warning");
+                return;
+            }
+            window.AppState.classes = window.AppState.classes.filter(c => c.id !== classId);
+            window.saveDataToStore('app_classes', 'list', { classes: window.AppState.classes });
+        };
+
+        // 8. KELOLA SISWA
+        function renderDashboardStudents() {
+            const selectedClassId = window.AppState.viewParams.selectedClass || (window.AppState.classes[0]?.id || '');
+            const searchQuery = (window.AppState.viewParams.search || '').toLowerCase();
+
+            let classStudents = window.AppState.students.filter(s => s.classId === selectedClassId);
+            if (searchQuery) {
+                classStudents = classStudents.filter(s => s.name.toLowerCase().includes(searchQuery) || (s.nis && s.nis.includes(searchQuery)));
+            }
+            classStudents.sort((a, b) => a.name.localeCompare(b.name));
+
+            return `
+                <div class="space-y-6">
+                    <div class="bg-white p-6 sm:p-8 rounded-3xl border border-yellow-200 shadow-card space-y-4">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div>
+                                <h3 class="text-xl font-black text-slate-800">Pengelolaan Data Peserta Didik</h3>
+                                <p class="text-xs text-slate-500">Masukkan nama siswa nyata dan atur kelasnya.</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <button onclick="showAddStudentModal('${selectedClassId}')" class="px-5 py-3 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-extrabold text-xs shadow-md transition flex items-center gap-2">
+                                    <i class="fa-solid fa-user-plus"></i> + Tambah Siswa
+                                </button>
+                                <button onclick="exportClassToExcel('${selectedClassId}')" class="px-4 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition flex items-center gap-2">
+                                    <i class="fa-solid fa-file-excel"></i> Ekspor Excel
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-3 pt-2">
+                            <select onchange="navigateTo('dashboard', {tab: 'students', selectedClass: this.value, search: '${searchQuery}'})" class="px-4 py-2.5 rounded-xl border border-yellow-300 font-bold text-xs bg-yellow-50 text-yellow-950 outline-none">
+                                ${window.AppState.classes.map(c => `
+                                    <option value="${c.id}" ${c.id === selectedClassId ? 'selected' : ''}>Kelas ${c.name}</option>
+                                `).join('')}
+                            </select>
+                            <input type="text" placeholder="Cari Nama / NIS..." value="${searchQuery}" onkeyup="if(event.key==='Enter') navigateTo('dashboard', {tab: 'students', selectedClass: '${selectedClassId}', search: this.value})" class="px-4 py-2.5 rounded-xl border border-yellow-300 text-xs outline-none flex-1" />
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-3xl border border-yellow-200 shadow-card overflow-hidden">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-yellow-100/90 border-b border-yellow-200 font-black uppercase text-yellow-950">
+                                <tr>
+                                    <th class="p-4 w-12 text-center">No</th>
+                                    <th class="p-4">NIS</th>
+                                    <th class="p-4">Nama Lengkap Siswa</th>
+                                    <th class="p-4">Kelas</th>
+                                    <th class="p-4 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+                                ${classStudents.length === 0 ? `
+                                    <tr><td colspan="5" class="p-8 text-center text-slate-400 font-bold">Belum ada siswa terdaftar di kelas ini. Klik "+ Tambah Siswa" untuk mengisi data.</td></tr>
+                                ` : classStudents.map((s, idx) => `
+                                    <tr class="hover:bg-yellow-50/40 transition">
+                                        <td class="p-4 text-center font-bold">${idx + 1}</td>
+                                        <td class="p-4 font-mono">${s.nis || '-'}</td>
+                                        <td class="p-4 font-bold text-slate-800">${s.name}</td>
+                                        <td class="p-4"><span class="px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-950 font-bold">${s.classId}</span></td>
+                                        <td class="p-4 text-center space-x-2">
+                                            <button onclick="showTransferStudentModal('${s.id}')" class="p-2 rounded-xl bg-yellow-100 text-yellow-950 hover:bg-yellow-200 font-bold text-xs" title="Pindah Kelas"><i class="fa-solid fa-right-left"></i></button>
+                                            <button onclick="deleteStudentConfirm('${s.id}')" class="p-2 rounded-xl bg-rose-100 text-rose-600 hover:bg-rose-200 font-bold text-xs" title="Hapus Siswa"><i class="fa-solid fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.showAddStudentModal = function(classId) {
+            showModal(`
+                <div class="space-y-4">
+                    <h3 class="text-xl font-black text-slate-800">Tambah Peserta Didik</h3>
+                    <form onsubmit="addStudentSubmit(event)" class="space-y-4 text-xs font-bold text-slate-700">
+                        <div>
+                            <label class="block mb-1">Nomor Induk Siswa (NIS)</label>
+                            <input type="text" id="st-nis" class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none" placeholder="Contoh: 20261001" />
+                        </div>
+                        <div>
+                            <label class="block mb-1">Nama Lengkap Siswa</label>
+                            <input type="text" id="st-name" class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none" placeholder="Masukkan nama siswa..." required />
+                        </div>
+                        <div>
+                            <label class="block mb-1">Kelas</label>
+                            <select id="st-class" class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none bg-white">
+                                ${window.AppState.classes.map(c => `
+                                    <option value="${c.id}" ${c.id === classId ? 'selected' : ''}>Kelas ${c.name}</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        <div class="flex gap-3 pt-2">
+                            <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl bg-slate-100 font-bold text-slate-700">Batal</button>
+                            <button type="submit" class="flex-1 py-3 rounded-xl bg-yellow-400 font-extrabold text-slate-950 shadow-md">Simpan Siswa</button>
+                        </div>
+                    </form>
+                </div>
+            `);
+        };
+
+        window.addStudentSubmit = function(e) {
+            e.preventDefault();
+            const newSt = {
+                id: 'std_' + Date.now(),
+                nis: document.getElementById('st-nis').value,
+                name: document.getElementById('st-name').value,
+                classId: document.getElementById('st-class').value
+            };
+            window.AppState.students.push(newSt);
+            window.saveDataToStore('app_students', 'roster', { list: window.AppState.students });
+            closeModal();
+        };
+
+        window.showTransferStudentModal = function(studentId) {
+            const st = window.AppState.students.find(s => s.id === studentId);
+            if (!st) return;
+
+            showModal(`
+                <div class="space-y-4">
+                    <h3 class="text-xl font-black text-slate-800">Pindahkan Kelas Siswa</h3>
+                    <p class="text-xs text-slate-500">Pindahkan <strong>${st.name}</strong> ke kelas lain tanpa menghapus data nilai.</p>
+                    <form onsubmit="transferStudentSubmit(event, '${st.id}')" class="space-y-4 text-xs font-bold text-slate-700">
+                        <div>
+                            <label class="block mb-1">Pilih Kelas Tujuan</label>
+                            <select id="transfer-class-id" class="w-full px-4 py-3 rounded-xl border border-yellow-300 outline-none bg-white">
+                                ${window.AppState.classes.map(c => `
+                                    <option value="${c.id}" ${c.id === st.classId ? 'disabled' : ''}>Kelas ${c.name}</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        <div class="flex gap-3 pt-2">
+                            <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl bg-slate-100 font-bold text-slate-700">Batal</button>
+                            <button type="submit" class="flex-1 py-3 rounded-xl bg-yellow-400 font-extrabold text-slate-950 shadow-md">Proses Kepindahan</button>
+                        </div>
+                    </form>
+                </div>
+            `);
+        };
+
+        window.transferStudentSubmit = function(e, studentId) {
+            e.preventDefault();
+            const targetClass = document.getElementById('transfer-class-id').value;
+            const st = window.AppState.students.find(s => s.id === studentId);
+            if (st) {
+                st.classId = targetClass;
+                window.saveDataToStore('app_students', 'roster', { list: window.AppState.students });
+            }
+            closeModal();
+        };
+
+        window.deleteStudentConfirm = function(studentId) {
+            window.AppState.students = window.AppState.students.filter(s => s.id !== studentId);
+            delete window.AppState.grades[studentId];
+            window.saveDataToStore('app_students', 'roster', { list: window.AppState.students });
+            window.saveDataToStore('app_students', 'grades', { records: window.AppState.grades });
+        };
+
+        // 9. INPUT NILAI GURU
+        function renderDashboardGrades() {
+            const selectedClassId = window.AppState.viewParams.selectedClass || (window.AppState.classes[0]?.id || '');
+            const selectedCompId = window.AppState.viewParams.selectedComp || 'asm_1';
+
+            const classStudents = window.AppState.students.filter(s => s.classId === selectedClassId);
+            classStudents.sort((a, b) => a.name.localeCompare(b.name));
+
+            return `
+                <div class="space-y-6">
+                    <div class="bg-white p-6 sm:p-8 rounded-3xl border border-yellow-200 shadow-card space-y-4">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div>
+                                <h3 class="text-xl font-black text-slate-800">Buku Nilai Guru (20 Komponen)</h3>
+                                <p class="text-xs text-slate-500">Input nilai angka 0–100 untuk otomatis memperbarui status indikator siswa.</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <button onclick="saveBatchGrades('${selectedClassId}')" class="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition flex items-center gap-2">
+                                    <i class="fa-solid fa-floppy-disk"></i> Simpan Seluruh Nilai
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Kelas</label>
+                                <select onchange="navigateTo('dashboard', {tab: 'grades', selectedClass: this.value, selectedComp: '${selectedCompId}'})" class="w-full px-4 py-3 rounded-xl border border-yellow-300 font-bold text-xs bg-yellow-50 text-yellow-950 outline-none">
+                                    ${window.AppState.classes.map(c => `
+                                        <option value="${c.id}" ${c.id === selectedClassId ? 'selected' : ''}>Kelas ${c.name}</option>
+                                    `).join('')}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Komponen Penilaian</label>
+                                <select onchange="navigateTo('dashboard', {tab: 'grades', selectedClass: '${selectedClassId}', selectedComp: this.value})" class="w-full px-4 py-3 rounded-xl border border-yellow-300 font-bold text-xs bg-yellow-50 text-yellow-950 outline-none">
+                                    ${window.GradeComponents.map(c => `
+                                        <option value="${c.id}" ${c.id === selectedCompId ? 'selected' : ''}>${c.label}</option>
+                                    `).join('')}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-3xl border border-yellow-200 shadow-card overflow-hidden">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-yellow-100/90 border-b border-yellow-200 font-black uppercase text-yellow-950">
+                                <tr>
+                                    <th class="p-4 w-12 text-center">No</th>
+                                    <th class="p-4">Nama Siswa</th>
+                                    <th class="p-4 w-40">Input Nilai (0-100)</th>
+                                    <th class="p-4 text-center w-36">Status Indikator</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+                                ${classStudents.length === 0 ? `
+                                    <tr><td colspan="4" class="p-8 text-center text-slate-400 font-bold">Tidak ada siswa di kelas ini.</td></tr>
+                                `: classStudents.map((s, idx) => {
+                                    const stG = window.AppState.grades[s.id] || {};
+                                    const val = stG[selectedCompId];
+                                    const isSet = (val !== undefined && val !== null && val !== '');
+                                    return `
+                                        <tr class="hover:bg-yellow-50/40 transition">
+                                            <td class="p-4 text-center font-bold">${idx + 1}</td>
+                                            <td class="p-4 font-bold text-slate-800">${s.name}</td>
+                                            <td class="p-4">
+                                                <input type="number" min="0" max="100" data-studentid="${s.id}" value="${isSet ? val : ''}" placeholder="Kosong" class="grade-input w-full px-3 py-2 rounded-xl border border-yellow-300 text-xs font-bold outline-none focus:ring-2 focus:ring-yellow-400" />
+                                            </td>
+                                            <td class="p-4 text-center">
+                                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold ${isSet ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                                                    <span class="w-2 h-2 rounded-full ${isSet ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                                                    ${isSet ? 'Sudah Diinput' : 'Belum Diinput'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.saveBatchGrades = function(classId) {
+            const inputs = document.querySelectorAll('.grade-input');
+            const selectedCompId = window.AppState.viewParams.selectedComp || 'asm_1';
+
+            inputs.forEach(inp => {
+                const sId = inp.dataset.studentid;
+                const rawVal = inp.value;
+
+                if (!window.AppState.grades[sId]) window.AppState.grades[sId] = {};
+
+                if (rawVal === '') {
+                    delete window.AppState.grades[sId][selectedCompId];
+                } else {
+                    const num = parseFloat(rawVal);
+                    if (num >= 0 && num <= 100) {
+                        window.AppState.grades[sId][selectedCompId] = num;
+                    }
+                }
+            });
+
+            window.saveDataToStore('app_students', 'grades', { records: window.AppState.grades });
+        };
+
+        // EXCEL EXPORT
+        window.exportClassToExcel = function(classId) {
+            const students = window.AppState.students.filter(s => s.classId === classId);
+            const data = students.map(s => {
+                const row = { NIS: s.nis || '', Nama: s.name, Kelas: s.classId };
+                const stG = window.AppState.grades[s.id] || {};
+                window.GradeComponents.forEach(c => {
+                    row[c.label] = stG[c.id] !== undefined ? stG[c.id] : '';
+                });
+                return row;
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, `Kelas_${classId}`);
+            XLSX.writeFile(workbook, `Rekap_Nilai_Kimia_Kelas_${classId}.xlsx`);
+        };
+
+        // UTILITIES
+        window.toggleMobileMenu = function() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        };
+
+        window.showModal = function(htmlContent) {
+            const backdrop = document.getElementById('modal-backdrop');
+            const box = document.getElementById('modal-box');
+            box.innerHTML = htmlContent;
+            backdrop.classList.remove('hidden');
+            setTimeout(() => {
+                box.classList.remove('scale-95', 'opacity-0');
+                box.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        };
+
+        window.closeModal = function() {
+            const backdrop = document.getElementById('modal-backdrop');
+            const box = document.getElementById('modal-box');
+            box.classList.remove('scale-100', 'opacity-100');
+            box.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => backdrop.classList.add('hidden'), 200);
+        };
+
+        window.showToast = function(msg, type = "info") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bg = "bg-slate-800 text-white";
+            if (type === "success") bg = "bg-emerald-600 text-white";
+            if (type === "warning") bg = "bg-amber-600 text-white";
+            if (type === "error") bg = "bg-rose-600 text-white";
+
+            toast.className = `px-5 py-3 rounded-2xl shadow-xl font-bold text-xs flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0 ${bg}`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${msg}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+
+        // ON LOAD
+        window.onload = function() {
+            setupFirebase();
+            navigateTo('home');
+        };
+    </script>
+</body>
+</html>
